@@ -16,6 +16,16 @@
 
     <h1>Admin Dashboard</h1>
 
+    <div class="top-buttons">
+
+        <a href="{{ url_for('home') }}">
+            <button class="secondary-btn">
+                ← Back to Home
+            </button>
+        </a>
+
+    </div>
+
     <div class="grid">
 
         <div class="card">
@@ -48,6 +58,68 @@
 </div>
 
 <hr>
+
+<!-- ==========================================
+     Integrity Analytics
+========================================== -->
+
+<h2>Integrity Analytics</h2>
+
+<div class="analytics-grid">
+
+    <div class="analytics-card">
+        <h3>Total Face Absence</h3>
+        <p>{{ total_face_absence }}</p>
+    </div>
+
+    <div class="analytics-card">
+        <h3>Browser Focus Loss</h3>
+        <p>{{ total_browser_loss }}</p>
+    </div>
+
+    <div class="analytics-card">
+        <h3>Highest Score</h3>
+        <p>{{ highest_score }}</p>
+    </div>
+
+    <div class="analytics-card">
+        <h3>Lowest Score</h3>
+        <p>{{ lowest_score }}</p>
+    </div>
+
+    <div class="analytics-card">
+        <h3>Average Score</h3>
+        <p>{{ average_score }}</p>
+    </div>
+
+</div>
+
+<!-- =====================================================
+     CHARTS
+====================================================== -->
+
+<div class="charts-section">
+
+    <!-- Risk Distribution -->
+    <div class="chart-card">
+
+        <h2>Risk Distribution</h2>
+
+        <canvas id="riskChart"></canvas>
+
+    </div>
+
+
+    <!-- Event Type Distribution -->
+    <div class="chart-card">
+
+        <h2>Event Type Distribution</h2>
+
+        <canvas id="eventChart"></canvas>
+
+    </div>
+
+</div>
 
 <h2>Event Logs</h2>
 <form method="GET" action="{{ url_for('exam.admin_dashboard') }}" class="filter-form">
@@ -216,6 +288,114 @@
 
 </table>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+    // =====================================================
+    // Risk Distribution Pie Chart
+    // =====================================================
+
+    const riskLabels = JSON.parse('{{ risk_labels | tojson }}');
+    const riskCounts = JSON.parse('{{ risk_counts | tojson }}');
+
+    new Chart(
+        document.getElementById("riskChart"),
+        {
+            type: "pie",
+
+            data: {
+                labels: riskLabels,
+
+                datasets: [{
+                    data: riskCounts
+                }]
+            },
+
+            options: {
+
+                responsive: true,
+
+                plugins: {
+
+                    legend: {
+                        position: "bottom"
+                    },
+
+                    tooltip: {
+
+                        callbacks: {
+
+                            label: function(context) {
+
+                                const label = context.label || "";
+
+                                const count = context.raw || 0;
+
+                                const total = context.dataset.data.reduce(
+                                    (sum, value) => sum + value,
+                                    0
+                                );
+
+                                const percentage = total > 0
+                                    ? ((count / total) * 100).toFixed(1)
+                                    : 0;
+
+                                return [
+                                    "Risk Level: " + label,
+                                    "Candidates: " + count,
+                                    "Percentage: " + percentage + "%"
+                                ];
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+        }
+    );
+
+
+    // =====================================================
+    // Event Type Distribution Doughnut Chart
+    // =====================================================
+
+    const eventLabels = JSON.parse('{{ event_labels | tojson }}');
+    const eventCounts = JSON.parse('{{ event_counts | tojson }}');
+    new Chart(
+        document.getElementById("eventChart"),
+        {
+            type: "doughnut",
+
+            data: {
+                labels: eventLabels,
+
+                datasets: [{
+                    data: eventCounts
+                }]
+            },
+
+            options: {
+                responsive: true,
+
+                plugins: {
+                    legend: {
+                        position: "bottom"
+                    }
+                }
+            }
+        }
+    );
+
+</script>
+
 </body>
+
+
 
 </html>

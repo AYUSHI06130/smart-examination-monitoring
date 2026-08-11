@@ -5,6 +5,7 @@ from flask import request,jsonify,session
 from flask import Response
 import os
 import cv2
+import pandas as pd
 
 from utils.camera_manager import CameraManager
 
@@ -16,8 +17,12 @@ from datetime import datetime
 
 
 
-from config import DATABASE
-
+#from config import DATABASE
+from config import (
+    DATABASE,
+    ADMIN_USERNAME,
+    ADMIN_PASSWORD
+)
 # ==========================================
 # Blueprint
 # ==========================================
@@ -569,6 +574,7 @@ def toggle_exam():
 
 @exam.route("/end_exam")
 def end_exam():
+    global camera_manager
 
     if "candidate_id" not in session:
 
@@ -606,7 +612,10 @@ def end_exam():
 
         end_time=?,
 
-        status=?
+        status=?,
+
+        face_absence_duration=?
+
 
     WHERE session_id=?
 
@@ -617,6 +626,8 @@ def end_exam():
         datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
 
         "Ended",
+
+        camera_manager.face_monitor.total_absence_duration,
 
         session_id
 
@@ -768,7 +779,7 @@ def end_exam():
 
 
     connection.close()
-    global camera_manager
+    
 
     if camera_manager is not None:
 
@@ -791,6 +802,7 @@ def end_exam():
         face_absence_count=face_absence_count,
         browser_loss_count=browser_loss_count,
         total_events=total_events,
+        face_presence_ratio=result["face_presence_ratio"],
 
         session_duration=session_duration,
         event_summary=event_summary
@@ -1033,8 +1045,40 @@ def view_scores():
         scores=scores
     )    
 
+@exam.route("/admin_login", methods=["GET", "POST"])
+def admin_login():
+
+    if request.method == "POST":
+
+        username = request.form["username"]
+
+        password = request.form["password"]
+
+        if (
+            username == ADMIN_USERNAME
+            and
+            password == ADMIN_PASSWORD
+        ):
+
+            session["is_admin"] = True
+
+            return redirect(
+                url_for("exam.admin_dashboard")
+            )
+
+        flash("Invalid Admin Credentials")
+
+    return render_template(
+        "admin_login.html"
+    )
+
 @exam.route("/admin_dashboard")
 def admin_dashboard():
+    if not session.get("is_admin"):
+
+        return redirect(
+            url_for("exam.admin_login")
+        )
 
     connection = sqlite3.connect(DATABASE)
     cursor = connection.cursor()
@@ -1151,6 +1195,117 @@ def admin_dashboard():
     cursor.execute(query, params)
 
     event_logs = cursor.fetchall()
+
+    # --------------------------------
+    # Integrity Analytics
+    # --------------------------------
+
+    # Face Absence Events
+    cursor.execute("""
+    SELECT COUNT(*)
+    FROM EventLog
+    WHERE event_type='Face Not Detected'
+    """)
+    total_face_absence = cursor.fetchone()[0]
+
+    # Browser Focus Loss Events
+    cursor.execute("""
+    SELECT COUNT(*)
+    FROM EventLog
+    WHERE event_type='Browser Focus Lost'
+    """)
+    total_browser_loss = cursor.fetchone()[0]
+
+    # Highest Score
+    cursor.execute("""
+    SELECT MAX(final_score)
+    FROM IntegrityScore
+    WHERE final_score IS NOT NULL
+    """)
+    highest_score = cursor.fetchone()[0] or 0
+
+    # Lowest Score
+    cursor.execute("""
+    SELECT MIN(final_score)
+    FROM IntegrityScore
+    WHERE final_score IS NOT NULL
+    """)
+    lowest_score = cursor.fetchone()[0] or 0
+
+    # Face Absence Events
+    cursor.execute("""
+    SELECT COUNT(*)
+    FROM EventLog
+    WHERE event_type='Face Not Detected'
+    """)
+    total_face_absence = cursor.fetchone()[0]
+
+    # Browser Focus Loss Events
+    cursor.execute("""
+    SELECT COUNT(*)
+    FROM EventLog
+    WHERE event_type='Browser Focus Lost'
+    """)
+    total_browser_loss = cursor.fetchone()[0]
+
+    # Highest Score
+    cursor.execute("""
+    SELECT MAX(final_score)
+    FROM IntegrityScore
+    WHERE final_score IS NOT NULL
+    """)
+    highest_score = cursor.fetchone()[0] or 0
+
+    # Lowest Score
+    cursor.execute("""
+    SELECT MIN(final_score)
+    FROM IntegrityScore
+    WHERE final_score IS NOT NULL
+    """)
+    lowest_score = cursor.fetchone()[0] or 0
+
+    # ==========================================================
+    # CHART DATA
+    # ==========================================================
+
+    # ----------------------------------------------------------
+    # Risk Distribution
+    # ----------------------------------------------------------
+
+    cursor.execute("""
+        SELECT risk_level, COUNT(*)
+        FROM IntegrityScore
+        GROUP BY risk_level
+    """)
+
+    risk_data = cursor.fetchall()
+
+    risk_labels = []
+    risk_counts = []
+
+    for row in risk_data:
+        risk_labels.append(row[0])
+        risk_counts.append(row[1])
+
+
+    # ----------------------------------------------------------
+    # Event Type Distribution
+    # ----------------------------------------------------------
+
+    cursor.execute("""
+        SELECT event_type, COUNT(*)
+        FROM EventLog
+        GROUP BY event_type
+    """)
+
+    event_data = cursor.fetchall()
+
+    event_labels = []
+    event_counts = []
+
+    for row in event_data:
+        event_labels.append(row[0])
+        event_counts.append(row[1])
     connection.close()
 
     return render_template(
@@ -1162,11 +1317,30 @@ def admin_dashboard():
         total_events=total_events,
         event_logs=event_logs,
 
+        risk_labels=risk_labels,
+        risk_counts=risk_counts,
+
+        event_labels=event_labels,
+        event_counts=event_counts,
+
         candidate_filter=candidate_filter,
         event_filter=event_filter,
-        date_filter=date_filter
+        date_filter=date_filter,
+        total_face_absence=total_face_absence,
+        total_browser_loss=total_browser_loss,
+        highest_score=highest_score,
+        lowest_score=lowest_score,
     )
 
+
+@exam.route("/admin_logout")
+def admin_logout():
+
+    session.pop("is_admin", None)
+
+    return redirect(
+        url_for("home")
+    )
 
 # ==========================================
 # View Evidence

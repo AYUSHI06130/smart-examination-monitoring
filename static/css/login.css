@@ -145,3 +145,32 @@
     }
 
 }
+
+.back-home-btn {
+    display: block;
+    width: 240px;
+    margin: 20px auto 0;
+
+    padding: 14px 16px;
+
+    box-sizing: border-box;
+
+    text-align: center;
+    text-decoration: none;
+
+    border: 2px solid #E58CB2;
+    border-radius: 16px;
+
+    background: #FFF3F8;
+    color: #C76190;
+
+    font-size: 17px;
+    font-weight: 600;
+
+    transition: .25s;
+}
+
+.back-home-btn:hover {
+    background: #FADBE7;
+    transform: translateY(-3px);
+}

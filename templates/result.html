@@ -52,6 +52,8 @@
 
         <p><strong>Total Suspicious Events :</strong> {{ total_events }}</p>
 
+        <p><strong>Face Presence Ratio:</strong>{{ face_presence_ratio }} %</p>
+
     </div>
 
     <!-- Event Summary -->
@@ -108,11 +110,19 @@
 
     </div>
 
+    <div class="score-chart-container">
+
+         <h2>Integrity Score Analysis</h2>
+
+        <canvas id="integrityScoreChart"></canvas>
+
+    </div>
+
     <div style="text-align:center;">
 
         <a href="{{ url_for('auth.dashboard') }}">
 
-            <button>
+            <button class="back-btn">
 
                 Back to Dashboard
 
@@ -120,16 +130,68 @@
 
         </a>
 
-        <a href="{{ url_for('exam.admin_dashboard') }}">
-            <button class="admin-btn">
-                Admin Dashboard
-            </button>
-        </a>
+        
 
 
     </div>
 
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+    const integrityScore = Number(
+        '{{ score | default(0) }}'
+    );
+
+    const remainingScore = Math.max(
+        0,
+        100 - integrityScore
+    );
+
+
+    new Chart(
+        document.getElementById("integrityScoreChart"),
+        {
+            type: "doughnut",
+
+            data: {
+
+                labels: [
+                    "Integrity Score",
+                    "Remaining"
+                ],
+
+                datasets: [{
+                    data: [
+                        integrityScore,
+                        remainingScore
+                    ]
+                }]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                cutout: "70%",
+
+                plugins: {
+
+                    legend: {
+                        position: "bottom"
+                    }
+
+                }
+
+            }
+
+        }
+    );
+
+</script>
 
 </body>
 

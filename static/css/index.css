@@ -227,6 +227,44 @@ body{
 
 }
 
+/* ==========================================================
+   ADMIN DASHBOARD BUTTON
+========================================================== */
+
+.admin-btn{
+
+    width:240px;
+
+    padding:16px;
+
+    border:none;
+
+    border-radius:16px;
+
+    background:#E58CB2;
+
+    color:white;
+
+    font-size:18px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+    box-shadow:0 6px 18px rgba(224,145,183,.35);
+
+}
+
+.admin-btn:hover{
+
+    background:#7b2d85;
+
+    transform:translateY(-3px);
+
+}
+
 
 /* ==========================================================
    RESPONSIVE

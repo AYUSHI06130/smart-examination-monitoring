@@ -54,6 +54,8 @@ CREATE TABLE IF NOT EXISTS Session(
 
     total_pause_seconds INTEGER DEFAULT 0,
 
+    face_absence_duration INTEGER DEFAULT 0
+
     FOREIGN KEY(candidate_id)
     REFERENCES Candidate(candidate_id)
 

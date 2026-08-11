@@ -1,6 +1,7 @@
 import sqlite3
 from datetime import datetime
 from config import DATABASE
+import pandas as pd
 
 # Penalty for each suspicious event
 PENALTIES = {
@@ -19,14 +20,17 @@ def calculate_integrity_score(candidate_id, session_id):
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
 
-    cursor.execute("""
+    
+    df = pd.read_sql_query(
+        """
         SELECT event_type
         FROM EventLog
-        WHERE candidate_id = ?
-        AND session_id = ?
-    """, (candidate_id,session_id))
-
-    events = cursor.fetchall()
+        WHERE candidate_id=?
+        AND session_id=?
+        """,
+        conn,
+        params=(candidate_id, session_id)
+    )
 
 
     # Face absence count
@@ -50,18 +54,75 @@ def calculate_integrity_score(candidate_id, session_id):
 
     browser_loss_count = cursor.fetchone()[0]
 
+    # ------------------------------------
+    # Get Session Duration
+    # ------------------------------------
+
+    cursor.execute("""
+    SELECT
+        start_time,
+        end_time,
+        face_absence_duration
+    FROM Session
+    WHERE session_id=?
+    """,
+    (session_id,))
+
+    session_data = cursor.fetchone()
+
+    start_time = datetime.strptime(
+        session_data[0],
+        "%Y-%m-%d %H:%M:%S"
+    )
+
+    end_time = datetime.strptime(
+        session_data[1],
+        "%Y-%m-%d %H:%M:%S"
+    )
+
+
+    absence_duration = session_data[2]
+
+    total_seconds = int(
+        (end_time - start_time).total_seconds()
+    )
+
+    if total_seconds > 0:
+
+        face_presence_ratio = round(
+
+            (
+                (total_seconds - absence_duration)
+                / total_seconds
+
+            ) * 100,
+
+            2
+
+        )
+
+    else:
+
+        face_presence_ratio = 100
+
     score = 100
 
-    for event in events:
+    event_weights = PENALTIES.copy()
 
-        event_name = event[0]
+    df["deduction"] = (
+        df["event_type"]
+          .map(event_weights)
+          .fillna(0)
+    )
+   
 
-        if event_name in PENALTIES:
-            score -= PENALTIES[event_name]
+    total_deduction = df["deduction"].sum()
 
-    score = max(score, 0)
+    score -= total_deduction
 
-    total_events = len(events)
+    score = max(0, min(score, 100))
+
+    total_events = len(df)
 
     if score >= 90:
         risk = "Excellent"
@@ -78,7 +139,55 @@ def calculate_integrity_score(candidate_id, session_id):
     else:
         risk = "Very High Risk"
 
+    # ------------------------------------
+    # Check if score already exists
+    # ------------------------------------
+
     cursor.execute("""
+    SELECT 1
+    FROM IntegrityScore
+    WHERE candidate_id=?
+    AND session_id=?
+    """,
+    (
+        candidate_id,
+        session_id
+    ))
+
+    exists = cursor.fetchone()
+
+    # ------------------------------------
+    # Update if exists
+    # ------------------------------------
+
+    if exists:
+
+        cursor.execute("""
+        UPDATE IntegrityScore
+        SET
+            final_score=?,
+            risk_level=?,
+            total_events=?,
+            calculated_at=?
+        WHERE candidate_id=?
+        AND session_id=?
+        """,
+        (
+            score,
+            risk,
+            total_events,
+            datetime.now(),
+            candidate_id,
+            session_id
+        ))
+
+    # ------------------------------------
+    # Otherwise Insert
+    # ------------------------------------
+
+    else:
+
+        cursor.execute("""
         INSERT INTO IntegrityScore
         (
             candidate_id,
@@ -89,15 +198,15 @@ def calculate_integrity_score(candidate_id, session_id):
             calculated_at
         )
         VALUES (?, ?, ?, ?, ?, ?)
-    """,
-    (
-        candidate_id,
-        session_id,
-        score,
-        risk,
-        total_events,
-        datetime.now()
-    ))
+        """,
+        (
+            candidate_id,
+            session_id,
+            score,
+            risk,
+            total_events,
+            datetime.now()
+        ))
 
     conn.commit()
     conn.close()
@@ -107,6 +216,7 @@ def calculate_integrity_score(candidate_id, session_id):
         "risk": risk,
         "face_absence_count": face_absence_count,
         "browser_loss_count": browser_loss_count,
+        "face_presence_ratio": face_presence_ratio,
         "total_events": total_events
     }
 

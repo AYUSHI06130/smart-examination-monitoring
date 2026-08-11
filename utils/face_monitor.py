@@ -372,10 +372,7 @@ class FaceMonitor:
 
                 self.face_not_detected_count += 1
 
-                self.log_event(
-                    "Face Not Detected",
-                    "Candidate left webcam"
-                )
+                
                 self.update_integrity_score(5)
 
                 self.previous_status = status
@@ -395,57 +392,57 @@ class FaceMonitor:
                 2
             )
 
-        cv2.putText(
-            frame,
-            status,
-            (20, 40),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            1,
-            color,
-            2
-        )
+        #cv2.putText(
+            #frame,
+            #status,
+            #(20, 40),
+            #cv2.FONT_HERSHEY_SIMPLEX,
+            #1,
+            #color,
+            #2
+        #)
 
-        cv2.putText(
-            frame,
-            f"Candidate ID: {self.candidate_id}",
-            (20, 75),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.8,
-            (255, 255, 255),
-            2
-        )
+        #cv2.putText(
+            #frame,
+            #f"Candidate ID: {self.candidate_id}",
+            #(20, 75),
+            #cv2.FONT_HERSHEY_SIMPLEX,
+            #0.8,
+            #(255, 255, 255),
+            #2
+        #)
 
         current_time = datetime.now().strftime("%H:%M:%S")
 
-        cv2.putText(
-            frame,
-            f"Current Time: {current_time}",
-            (20, 110),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.8,
-            (0, 255, 255),
-            2
-        )
+        #cv2.putText(
+            #frame,
+            #f"Current Time: {current_time}",
+            #(20, 110),
+            #cv2.FONT_HERSHEY_SIMPLEX,
+            #0.8,
+            #(0, 255, 255),
+            #2
+        #)
 
-        cv2.putText(
-            frame,
-            f"Absence Duration: {self.absence_duration} sec",
-            (20, 145),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.8,
-            (255, 255, 0),
-            2
-        )
+        #cv2.putText(
+            #frame,
+            #f"Absence Duration: {self.absence_duration} sec",
+            #(20, 145),
+            #cv2.FONT_HERSHEY_SIMPLEX,
+            #0.8,
+            #(255, 255, 0),
+            #2
+        #)
 
-        cv2.putText(
-            frame,
-            f"Total Absence Duration: {self.total_absence_duration} sec",
-            (20, 180),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.8,
-            (0, 255, 255),
-            2
-        )
+        #cv2.putText(
+            #frame,
+            #f"Total Absence Duration: {self.total_absence_duration} sec",
+            #(20, 180),
+            #cv2.FONT_HERSHEY_SIMPLEX,
+            #0.8,
+            #(0, 255, 255),
+            #2
+        #)
 
         return frame
 

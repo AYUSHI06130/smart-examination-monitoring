@@ -1,0 +1,131 @@
+/* ===========================================
+   PAGE
+=========================================== */
+
+body{
+
+    margin:0;
+
+    padding:0;
+
+    background:#FFF6FA;
+
+    font-family:Arial, Helvetica, sans-serif;
+
+}
+
+/* ===========================================
+   CENTER CONTAINER
+=========================================== */
+
+.login-container{
+
+    height:100vh;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+}
+
+/* ===========================================
+   LOGIN CARD
+=========================================== */
+
+.login-card{
+
+    width:520px;
+
+    background:white;
+
+    border-radius:22px;
+
+    padding:45px;
+
+    box-shadow:0 10px 35px rgba(0,0,0,.08);
+
+    text-align:center;
+
+}
+
+/* ===========================================
+   TITLE
+=========================================== */
+
+.login-card h1{
+
+    color:#C85E8E;
+
+    font-size:42px;
+
+    margin-bottom:35px;
+
+}
+
+/* ===========================================
+   INPUTS
+=========================================== */
+
+.login-card input{
+
+    width:100%;
+
+    padding:16px;
+
+    margin-bottom:18px;
+
+    border:2px solid #F3C4D9;
+
+    border-radius:14px;
+
+    font-size:17px;
+
+    outline:none;
+
+    box-sizing:border-box;
+
+}
+
+.login-card input:focus{
+
+    border-color:#E58CB2;
+
+}
+
+/* ===========================================
+   BUTTON
+=========================================== */
+
+.login-btn{
+
+    width:100%;
+
+    padding:16px;
+
+    border:none;
+
+    border-radius:16px;
+
+    background:#E58CB2;
+
+    color:white;
+
+    font-size:18px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+}
+
+.login-btn:hover{
+
+    background:#D96E9D;
+
+    transform:translateY(-2px);
+
+}
