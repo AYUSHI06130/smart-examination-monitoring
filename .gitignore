@@ -1,29 +1,32 @@
+# Virtual environment
+venv/
+
 # Python
 __pycache__/
 *.pyc
 
-# Virtual Environment
-venv/
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Generated candidate data
+generated_data/*.csv
+
+# Candidate photos
+photos/*
+!photos/.gitkeep
+
+# Monitoring screenshots
+screenshots/*
+!screenshots/.gitkeep
+
+# Generated webcam frames
+static/frames/*
+!static/frames/.gitkeep
+
+# Environment/secrets
+.env
 
 # VS Code
 .vscode/
-
-# Logs
-logs/*.log
-
-# SQLite temporary files
-*.db-journal
-
-# Ignore actual SQLite database
-database/monitoring.db
-
-# Webcam uploads
-static/uploads/
-
-# Screenshots
-screenshots/
-evidence/
-
-# OS files
-Thumbs.db
-.DS_Store
