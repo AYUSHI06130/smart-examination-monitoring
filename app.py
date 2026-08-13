@@ -1,3 +1,8 @@
+import os
+print("======================================")
+print("RUNNING APP FROM:")
+print(os.path.abspath(__file__))
+print("======================================")
 from flask import Flask, render_template
 
 from config import SECRET_KEY
@@ -17,6 +22,8 @@ app.register_blueprint(exam)
 def home():
     return render_template("index.html")
 
+
+
 if __name__ == "__main__":
     print("\n========== ROUTES ==========")
 
@@ -26,5 +33,5 @@ if __name__ == "__main__":
         print(rule)
 
     print("============================\n")
-    app.run(debug=True)
+    app.run(debug=True, use_reloader=False)
     

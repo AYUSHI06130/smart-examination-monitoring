@@ -11,6 +11,9 @@
 </head>
 
 <body>
+<h1 style="color:red;">
+    TEST - NEW ADMIN DASHBOARD
+</h1>
 
 <div class="container">
 
@@ -121,49 +124,133 @@
 
 </div>
 
-<h2>Event Logs</h2>
-<form method="GET" action="{{ url_for('exam.admin_dashboard') }}" class="filter-form">
+   <h2>Event Logs</h2>
+
+
+<!-- =====================================================
+     EVENT FILTER FORM
+     ===================================================== -->
+
+<form
+    method="GET"
+    action="{{ url_for('exam.admin_dashboard') }}"
+    class="filter-form"
+>
+
+    <!-- =================================================
+         CANDIDATE ID FILTER
+         ================================================= -->
 
     <input
         type="text"
         name="candidate_id"
         placeholder="Candidate ID"
-        value="{{ request.args.get('candidate_id','') }}">
+        value="{{ request.args.get('candidate_id', '') }}"
+    >
+
+
+    <!-- =================================================
+         EVENT TYPE FILTER
+         ================================================= -->
 
     <select name="event_type">
 
-        <option value="">All Events</option>
+        <option value="">
+            All Events
+        </option>
 
-        <option value="Face Not Detected">Face Not Detected</option>
 
-        <option value="Browser Focus Lost">Browser Focus Lost</option>
+        <option
+            value="Face Not Detected"
+            {% if request.args.get('event_type') == 'Face Not Detected' %}
+                selected
+            {% endif %}
+        >
+            Face Not Detected
+        </option>
 
-        <option value="Browser Tab Changed">Browser Tab Changed</option>
 
-        <option value="Face Returned">Face Returned</option>
+        <option
+            value="Browser Focus Lost"
+            {% if request.args.get('event_type') == 'Browser Focus Lost' %}
+                selected
+            {% endif %}
+        >
+            Browser Focus Lost
+        </option>
 
-        <option value="Exam Started">Exam Started</option>
 
-        <option value="Exam Ended">Exam Ended</option>
+        <option
+            value="Browser Tab Changed"
+            {% if request.args.get('event_type') == 'Browser Tab Changed' %}
+                selected
+            {% endif %}
+        >
+            Browser Tab Changed
+        </option>
+
+
+        <option
+            value="Face Returned"
+            {% if request.args.get('event_type') == 'Face Returned' %}
+                selected
+            {% endif %}
+        >
+            Face Returned
+        </option>
+
+
+        <option
+            value="Exam Started"
+            {% if request.args.get('event_type') == 'Exam Started' %}
+                selected
+            {% endif %}
+        >
+            Exam Started
+        </option>
+
+
+        <option
+            value="Exam Ended"
+            {% if request.args.get('event_type') == 'Exam Ended' %}
+                selected
+            {% endif %}
+        >
+            Exam Ended
+        </option>
 
     </select>
+
+
+    <!-- =================================================
+         DATE FILTER
+         ================================================= -->
 
     <input
         type="date"
         name="event_date"
-        value="{{ request.args.get('event_date','') }}">
+        value="{{ request.args.get('event_date', '') }}"
+    >
+
+
+    <!-- =================================================
+         SORT ORDER
+         ================================================= -->
 
     <select name="sort_order">
 
-        <option value="DESC"
-            {% if request.args.get('sort_order','DESC') == 'DESC' %}
+        <option
+            value="DESC"
+            {% if request.args.get('sort_order', 'DESC') == 'DESC' %}
                 selected
             {% endif %}
         >
             Newest First
         </option>
 
-        <option value="ASC"
+
+        <option
+            value="ASC"
             {% if request.args.get('sort_order') == 'ASC' %}
                 selected
             {% endif %}
@@ -171,183 +258,570 @@
             Oldest First
         </option>
 
-    </select>    
+    </select>
+
+
+    <!-- =================================================
+         SEARCH BUTTON
+         ================================================= -->
 
     <button type="submit">
-
         Search
-
     </button>
+
+
+    <!-- =================================================
+         RESET BUTTON
+         ================================================= -->
+
     <a href="{{ url_for('exam.admin_dashboard') }}">
-        <button type="button" class="reset-btn">
+
+        <button
+            type="button"
+            class="reset-btn"
+        >
             Reset
         </button>
+
+    </a>
+
+
+    <!-- =================================================
+         DOWNLOAD CURRENT FILTERED / UNFILTERED EVENTS
+         ================================================= -->
+
+    <a
+        href="{{ url_for(
+            'exam.download_event_logs',
+            candidate_id=request.args.get('candidate_id', ''),
+            event_type=request.args.get('event_type', ''),
+            event_date=request.args.get('event_date', '')
+        ) }}"
+        class="download-btn"
+    >
+        Download Current Events
     </a>
 
 </form>
 
-<table class="event-table">
 
-    <tr>
+<!-- =====================================================
+     SELECTED EVENTS FORM
+     ===================================================== -->
 
-        <th>Candidate ID</th>
+<form
+    method="POST"
+    action="{{ url_for('exam.download_selected_events') }}"
+    id="selectedEventsForm"
+>
 
-        <th>Event Type</th>
 
-        <th>Timestamp</th>
+    <!-- =================================================
+         EVENT TABLE
+         ================================================= -->
 
-        <th>Remarks</th>
+    <table class="event-table">
 
-        <th>Evidence</th>
 
-    </tr>
+        <!-- =================================================
+             TABLE HEADER
+             ================================================= -->
 
-    {% for event in event_logs %}
+        <tr>
 
-    <tr>
+            <!-- Select All -->
 
-        <td>{{ event[0] }}</td>
+            <th>
 
-        <td>
+                <input
+                    type="checkbox"
+                    id="selectAllEvents"
+                >
 
-        {% if event[1] == "Face Not Detected" %}
+            </th>
 
-            <span class="event-badge danger">
+
+            <!-- Candidate ID -->
+
+            <th>
+                Candidate ID
+            </th>
+
+
+            <!-- Event Type -->
+
+            <th>
+                Event Type
+            </th>
+
+
+            <!-- Timestamp -->
+
+            <th>
+                Timestamp
+            </th>
+
+
+            <!-- Remarks -->
+
+            <th>
+                Remarks
+            </th>
+
+
+            <!-- Evidence -->
+
+            <th>
+                Evidence
+            </th>
+
+        </tr>
+
+
+        <!-- =================================================
+             EVENT LOG ROWS
+             ================================================= -->
+
+        {% for event in event_logs %}
+
+        <tr>
+
+
+            <!-- =================================================
+                 SELECT INDIVIDUAL EVENT
+                 ================================================= -->
+
+            <td>
+
+                <input
+                    type="checkbox"
+                    name="selected_events"
+                    value="{{ event[0] }}"
+                    class="event-checkbox"
+                >
+
+            </td>
+
+
+            <!-- =================================================
+                 CANDIDATE ID
+                 ================================================= -->
+
+            <td>
+
                 {{ event[1] }}
-            </span>
 
-        {% elif event[1] == "Browser Focus Lost" %}
+            </td>
 
-            <span class="event-badge warning">
-                {{ event[1] }}
-            </span>
 
-        {% elif event[1] == "Browser Tab Changed" %}
+            <!-- =================================================
+                 EVENT TYPE
+                 ================================================= -->
 
-            <span class="event-badge warning">
-                {{ event[1] }}
-            </span>
+            <td>
 
-        {% elif event[1] == "Face Returned" %}
 
-            <span class="event-badge success">
-                {{ event[1] }}
-            </span>
+                {% if event[2] == "Face Not Detected" %}
 
-        {% elif event[1] == "Exam Started" %}
+                    <span class="event-badge danger">
+                        {{ event[2] }}
+                    </span>
 
-            <span class="event-badge info">
-                {{ event[1] }}
-            </span>
 
-        {% elif event[1] == "Exam Ended" %}
+                {% elif event[2] == "Browser Focus Lost" %}
 
-            <span class="event-badge info">
-                {{ event[1] }}
-            </span>
+                    <span class="event-badge warning">
+                        {{ event[2] }}
+                    </span>
 
-        {% else %}
 
-            {{ event[1] }}
+                {% elif event[2] == "Browser Tab Changed" %}
 
-        {% endif %}
+                    <span class="event-badge warning">
+                        {{ event[2] }}
+                    </span>
 
-        </td>
 
-        <td>{{ event[2] }}</td>
+                {% elif event[2] == "Face Returned" %}
 
-        <td>{{ event[3] }}</td>
+                    <span class="event-badge success">
+                        {{ event[2] }}
+                    </span>
 
-        <td>
 
-        {% if event[4] %}
+                {% elif event[2] == "Exam Started" %}
 
-            <a href="{{ url_for('exam.view_evidence',filename=event[4].replace('evidence\\', '').replace('\\', '/')) }}"
-                target="_blank"
-                class="evidence-btn">
+                    <span class="event-badge info">
+                        {{ event[2] }}
+                    </span>
 
-                View
 
-            </a>
+                {% elif event[2] == "Exam Ended" %}
 
-    
+                    <span class="event-badge info">
+                        {{ event[2] }}
+                    </span>
 
-        {% else %}
 
-            -
+                {% else %}
 
-        {% endif %}
+                    {{ event[2] }}
 
-        </td>
+                {% endif %}
 
-    </tr>
 
-        
+            </td>
 
-    {% endfor %}
 
-</table>
+            <!-- =================================================
+                 TIMESTAMP
+                 ================================================= -->
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <td>
+
+                {{ event[3] }}
+
+            </td>
+
+
+            <!-- =================================================
+                 REMARKS
+                 ================================================= -->
+
+            <td>
+
+                {{ event[4] }}
+
+            </td>
+
+
+            <!-- =================================================
+                 EVIDENCE
+                 ================================================= -->
+
+            <td>
+
+
+                {% if event[5] %}
+
+                    <a
+                        href="{{ url_for(
+                            'exam.view_evidence',
+                            filename=event[5].replace(
+                                'evidence\\',
+                                ''
+                            ).replace(
+                                '\\',
+                                '/'
+                            )
+                        ) }}"
+                        target="_blank"
+                        class="evidence-btn"
+                    >
+                        View
+                    </a>
+
+
+                {% else %}
+
+                    -
+
+                {% endif %}
+
+
+            </td>
+
+
+        </tr>
+
+        {% endfor %}
+
+
+    </table>
+
+
+    <!-- =================================================
+         DOWNLOAD SELECTED EVENTS BUTTON
+         ================================================= -->
+
+    <div class="selected-download-container">
+
+        <button
+            type="submit"
+            class="download-btn"
+        >
+            Download Selected Events
+        </button>
+
+    </div>
+
+
+</form>
+
+
+<!-- =====================================================
+     SELECT / DESELECT ALL + VALIDATION
+     ===================================================== -->
 
 <script>
 
     // =====================================================
-    // Risk Distribution Pie Chart
+    // SELECT / DESELECT ALL EVENTS
     // =====================================================
 
-    const riskLabels = JSON.parse('{{ risk_labels | tojson }}');
-    const riskCounts = JSON.parse('{{ risk_counts | tojson }}');
+    const selectAllCheckbox =
+        document.getElementById("selectAllEvents");
 
-    new Chart(
-        document.getElementById("riskChart"),
-        {
-            type: "pie",
 
-            data: {
-                labels: riskLabels,
+    if (selectAllCheckbox) {
 
-                datasets: [{
-                    data: riskCounts
-                }]
-            },
+        selectAllCheckbox.addEventListener(
+            "change",
+            function () {
 
-            options: {
+                const eventCheckboxes =
+                    document.querySelectorAll(
+                        ".event-checkbox"
+                    );
 
-                responsive: true,
 
-                plugins: {
+                eventCheckboxes.forEach(
+                    function (checkbox) {
 
-                    legend: {
-                        position: "bottom"
-                    },
+                        checkbox.checked =
+                            selectAllCheckbox.checked;
 
-                    tooltip: {
+                    }
+                );
 
-                        callbacks: {
+            }
+        );
 
-                            label: function(context) {
+    }
 
-                                const label = context.label || "";
 
-                                const count = context.raw || 0;
+    // =====================================================
+    // PREVENT EMPTY SELECTION
+    // =====================================================
 
-                                const total = context.dataset.data.reduce(
-                                    (sum, value) => sum + value,
-                                    0
+    const selectedEventsForm =
+        document.getElementById(
+            "selectedEventsForm"
+        );
+
+
+    if (selectedEventsForm) {
+
+        selectedEventsForm.addEventListener(
+            "submit",
+            function (event) {
+
+                const selected =
+                    document.querySelectorAll(
+                        ".event-checkbox:checked"
+                    );
+
+
+                if (selected.length === 0) {
+
+                    event.preventDefault();
+
+
+                    alert(
+                        "Please select at least one event."
+                    );
+
+                }
+
+            }
+        );
+
+    }
+
+</script> 
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- =====================================================
+     Candidate Risk Data
+     ===================================================== -->
+
+<script type="application/json" id="candidateRiskData">
+    {{ candidate_risk_data | tojson }}
+</script>
+<script>
+
+const candidateRiskData = JSON.parse(
+    document.getElementById("candidateRiskData").textContent
+);
+
+
+// =====================================================
+// Risk Categories
+// =====================================================
+
+const riskLabels = [
+    "Excellent",
+    "Low Risk",
+    "Medium Risk",
+    "High Risk",
+    "Very High Risk"
+];
+
+
+// =====================================================
+// Count candidates in each risk category
+// =====================================================
+
+const riskCounts = riskLabels.map(function(risk) {
+
+    return candidateRiskData.filter(function(candidate) {
+
+        return candidate[4] === risk;
+
+    }).length;
+
+});
+
+
+// =====================================================
+// Risk Distribution Chart
+// =====================================================
+
+new Chart(
+    document.getElementById("riskChart"),
+    {
+
+        type: "pie",
+
+        data: {
+
+            labels: riskLabels,
+
+            datasets: [{
+
+                data: riskCounts
+
+            }]
+
+        },
+
+        options: {
+
+            responsive: true,
+
+            plugins: {
+
+                legend: {
+
+                    position: "bottom"
+
+                },
+
+                tooltip: {
+
+                    callbacks: {
+
+                        title: function(context) {
+
+                            return context[0].label;
+
+                        },
+
+
+                        label: function(context) {
+
+                            const selectedRisk =
+                                context.label;
+
+
+                            const candidates =
+                                candidateRiskData.filter(
+                                    function(candidate) {
+
+                                        return candidate[4] === selectedRisk;
+
+                                    }
                                 );
 
-                                const percentage = total > 0
-                                    ? ((count / total) * 100).toFixed(1)
+
+                            const totalCandidates =
+                                candidateRiskData.length;
+
+
+                            const percentage =
+                                totalCandidates > 0
+                                    ? (
+                                        candidates.length /
+                                        totalCandidates *
+                                        100
+                                    ).toFixed(1)
                                     : 0;
 
-                                return [
-                                    "Risk Level: " + label,
-                                    "Candidates: " + count,
-                                    "Percentage: " + percentage + "%"
-                                ];
 
-                            }
+                            // ---------------------------------
+                            // Tooltip content
+                            // ---------------------------------
+
+                            const tooltipLines = [
+
+                                "Candidates: " +
+                                candidates.length,
+
+                                "Percentage: " +
+                                percentage +
+                                "%"
+
+                            ];
+
+
+                            candidates.forEach(
+                                function(candidate, index) {
+
+                                    tooltipLines.push("");
+
+                                    tooltipLines.push(
+                                        "Candidate " +
+                                        (index + 1)
+                                    );
+
+                                    tooltipLines.push(
+                                        "ID: " +
+                                        candidate[0]
+                                    );
+
+                                    tooltipLines.push(
+                                        "Name: " +
+                                        candidate[1]
+                                    );
+
+                                    tooltipLines.push(
+                                        "Email: " +
+                                        candidate[2]
+                                    );
+
+                                    tooltipLines.push(
+                                        "Score: " +
+                                        candidate[3]
+                                    );
+
+                                    tooltipLines.push(
+                                        "Risk: " +
+                                        candidate[4]
+                                    );
+
+                                    tooltipLines.push(
+                                        "Session: " +
+                                        candidate[5]
+                                    );
+
+                                }
+                            );
+
+
+                            return tooltipLines;
 
                         }
 
@@ -358,44 +832,63 @@
             }
 
         }
-    );
+
+    }
+
+);
+
+</script>
+<script>
+
+const eventLabels = JSON.parse(
+    '{{ event_labels | tojson }}'
+);
+
+const eventCounts = JSON.parse(
+    '{{ event_counts | tojson }}'
+);
 
 
-    // =====================================================
-    // Event Type Distribution Doughnut Chart
-    // =====================================================
+new Chart(
+    document.getElementById("eventChart"),
+    {
 
-    const eventLabels = JSON.parse('{{ event_labels | tojson }}');
-    const eventCounts = JSON.parse('{{ event_counts | tojson }}');
-    new Chart(
-        document.getElementById("eventChart"),
-        {
-            type: "doughnut",
+        type: "doughnut",
 
-            data: {
-                labels: eventLabels,
+        data: {
 
-                datasets: [{
-                    data: eventCounts
-                }]
-            },
+            labels: eventLabels,
 
-            options: {
-                responsive: true,
+            datasets: [{
 
-                plugins: {
-                    legend: {
-                        position: "bottom"
-                    }
+                data: eventCounts
+
+            }]
+
+        },
+
+        options: {
+
+            responsive: true,
+
+            plugins: {
+
+                legend: {
+
+                    position: "bottom"
+
                 }
+
             }
+
         }
-    );
+
+    }
+
+);
 
 </script>
 
+
 </body>
-
-
-
 </html>

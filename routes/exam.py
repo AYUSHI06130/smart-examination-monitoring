@@ -6,6 +6,8 @@ from flask import Response
 import os
 import cv2
 import pandas as pd
+import csv
+import io
 
 from utils.camera_manager import CameraManager
 
@@ -1074,14 +1076,22 @@ def admin_login():
 
 @exam.route("/admin_dashboard")
 def admin_dashboard():
-    if not session.get("is_admin"):
 
+    # --------------------------------
+    # Admin Access Protection
+    # --------------------------------
+
+    if not session.get("is_admin"):
         return redirect(
             url_for("exam.admin_login")
         )
 
     connection = sqlite3.connect(DATABASE)
     cursor = connection.cursor()
+
+    # ==========================================================
+    # BASIC DASHBOARD STATISTICS
+    # ==========================================================
 
     # -------------------------------
     # Total Candidates
@@ -1123,7 +1133,7 @@ def admin_dashboard():
     # -------------------------------
 
     cursor.execute("""
-        SELECT ROUND(AVG(final_score),2)
+        SELECT ROUND(AVG(final_score), 2)
         FROM IntegrityScore
         WHERE final_score IS NOT NULL
     """)
@@ -1132,9 +1142,59 @@ def admin_dashboard():
 
     average_score = result[0] if result[0] else 0
 
-    # -------------------------------
-    # Total Suspicious Events
-    # -------------------------------
+    # ==========================================================
+    # LATEST INTEGRITY RESULT FOR EACH CANDIDATE
+    # ==========================================================
+
+    cursor.execute("""
+        SELECT
+            c.candidate_id,
+            c.name,
+            c.email,
+            i.final_score,
+            i.risk_level,
+            i.session_id
+        FROM Candidate c
+        JOIN IntegrityScore i
+            ON c.candidate_id = i.candidate_id
+        WHERE i.session_id = (
+            SELECT MAX(i2.session_id)
+            FROM IntegrityScore i2
+            WHERE i2.candidate_id = c.candidate_id
+        )
+        ORDER BY c.candidate_id
+    """)
+
+    candidate_risk_data = cursor.fetchall()
+
+    # ==========================================================
+    # RISK DISTRIBUTION DATA
+    # Based on latest session of each candidate
+    # ==========================================================
+
+    risk_labels = [
+        "Excellent",
+        "Low Risk",
+        "Medium Risk",
+        "High Risk",
+        "Very High Risk"
+    ]
+
+    risk_counts = []
+
+    for risk in risk_labels:
+
+        count = sum(
+            1
+            for candidate in candidate_risk_data
+            if candidate[4] == risk
+        )
+
+        risk_counts.append(count)
+
+    # ==========================================================
+    # TOTAL SUSPICIOUS EVENTS
+    # ==========================================================
 
     cursor.execute("""
         SELECT COUNT(*)
@@ -1145,48 +1205,49 @@ def admin_dashboard():
 
     total_events = cursor.fetchone()[0]
 
-    
-    candidate_filter = request.args.get("candidate_id", "")
-    event_filter = request.args.get("event_type", "")
-    date_filter = request.args.get("event_date", "")
-    # --------------------------------
-    # Fetch Event Logs
-    # --------------------------------
+    # ==========================================================
+    # EVENT LOG FILTERS
+    # ==========================================================
+
+    candidate_filter = request.args.get(
+        "candidate_id", ""
+    )
+
+    event_filter = request.args.get(
+        "event_type", ""
+    )
+
+    date_filter = request.args.get(
+        "event_date", ""
+    )
+
+    # ==========================================================
+    # FETCH EVENT LOGS
+    # ==========================================================
 
     query = """
-
-    SELECT
-
-        candidate_id,
-
-        event_type,
-
-        timestamp,
-
-        remarks,
-
-        screenshot_path
-
-    FROM EventLog
-
-    WHERE 1=1
-
+        SELECT
+            rowid AS event_id,
+            candidate_id,
+            event_type,
+            timestamp,
+            remarks,
+            screenshot_path
+        FROM EventLog
+        WHERE 1=1
     """
 
     params = []
 
     if candidate_filter:
-
         query += " AND candidate_id=?"
         params.append(candidate_filter)
 
     if event_filter:
-
         query += " AND event_type=?"
         params.append(event_filter)
 
     if date_filter:
-
         query += " AND DATE(timestamp)=?"
         params.append(date_filter)
 
@@ -1196,104 +1257,66 @@ def admin_dashboard():
 
     event_logs = cursor.fetchall()
 
-    # --------------------------------
-    # Integrity Analytics
-    # --------------------------------
-
-    # Face Absence Events
-    cursor.execute("""
-    SELECT COUNT(*)
-    FROM EventLog
-    WHERE event_type='Face Not Detected'
-    """)
-    total_face_absence = cursor.fetchone()[0]
-
-    # Browser Focus Loss Events
-    cursor.execute("""
-    SELECT COUNT(*)
-    FROM EventLog
-    WHERE event_type='Browser Focus Lost'
-    """)
-    total_browser_loss = cursor.fetchone()[0]
-
-    # Highest Score
-    cursor.execute("""
-    SELECT MAX(final_score)
-    FROM IntegrityScore
-    WHERE final_score IS NOT NULL
-    """)
-    highest_score = cursor.fetchone()[0] or 0
-
-    # Lowest Score
-    cursor.execute("""
-    SELECT MIN(final_score)
-    FROM IntegrityScore
-    WHERE final_score IS NOT NULL
-    """)
-    lowest_score = cursor.fetchone()[0] or 0
-
-    # Face Absence Events
-    cursor.execute("""
-    SELECT COUNT(*)
-    FROM EventLog
-    WHERE event_type='Face Not Detected'
-    """)
-    total_face_absence = cursor.fetchone()[0]
-
-    # Browser Focus Loss Events
-    cursor.execute("""
-    SELECT COUNT(*)
-    FROM EventLog
-    WHERE event_type='Browser Focus Lost'
-    """)
-    total_browser_loss = cursor.fetchone()[0]
-
-    # Highest Score
-    cursor.execute("""
-    SELECT MAX(final_score)
-    FROM IntegrityScore
-    WHERE final_score IS NOT NULL
-    """)
-    highest_score = cursor.fetchone()[0] or 0
-
-    # Lowest Score
-    cursor.execute("""
-    SELECT MIN(final_score)
-    FROM IntegrityScore
-    WHERE final_score IS NOT NULL
-    """)
-    lowest_score = cursor.fetchone()[0] or 0
-
     # ==========================================================
-    # CHART DATA
+    # INTEGRITY ANALYTICS
     # ==========================================================
 
-    # ----------------------------------------------------------
-    # Risk Distribution
-    # ----------------------------------------------------------
+    # -------------------------------
+    # Face Absence Events
+    # -------------------------------
 
     cursor.execute("""
-        SELECT risk_level, COUNT(*)
+        SELECT COUNT(*)
+        FROM EventLog
+        WHERE event_type='Face Not Detected'
+    """)
+
+    total_face_absence = cursor.fetchone()[0]
+
+    # -------------------------------
+    # Browser Focus Loss Events
+    # -------------------------------
+
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM EventLog
+        WHERE event_type='Browser Focus Lost'
+    """)
+
+    total_browser_loss = cursor.fetchone()[0]
+
+    # -------------------------------
+    # Highest Score
+    # -------------------------------
+
+    cursor.execute("""
+        SELECT MAX(final_score)
         FROM IntegrityScore
-        GROUP BY risk_level
+        WHERE final_score IS NOT NULL
     """)
 
-    risk_data = cursor.fetchall()
+    highest_score = cursor.fetchone()[0] or 0
 
-    risk_labels = []
-    risk_counts = []
-
-    for row in risk_data:
-        risk_labels.append(row[0])
-        risk_counts.append(row[1])
-
-
-    # ----------------------------------------------------------
-    # Event Type Distribution
-    # ----------------------------------------------------------
+    # -------------------------------
+    # Lowest Score
+    # -------------------------------
 
     cursor.execute("""
-        SELECT event_type, COUNT(*)
+        SELECT MIN(final_score)
+        FROM IntegrityScore
+        WHERE final_score IS NOT NULL
+    """)
+
+    lowest_score = cursor.fetchone()[0] or 0
+
+    # ==========================================================
+    # EVENT TYPE DISTRIBUTION
+    # ==========================================================
+
+    cursor.execute("""
+        SELECT
+            event_type,
+            COUNT(*)
         FROM EventLog
         GROUP BY event_type
     """)
@@ -1304,32 +1327,61 @@ def admin_dashboard():
     event_counts = []
 
     for row in event_data:
+
         event_labels.append(row[0])
         event_counts.append(row[1])
+
+    print("\n================ RISK CANDIDATE DATA ================")
+    print(candidate_risk_data)
+    print("======================================================\n")
+
+    # ==========================================================
+    # CLOSE DATABASE
+    # ==========================================================
+
     connection.close()
+
+    # ==========================================================
+    # SEND DATA TO ADMIN DASHBOARD
+    # ==========================================================
 
     return render_template(
         "admin_dashboard.html",
+
         total_candidates=total_candidates,
+
         active_sessions=active_sessions,
+
         completed_sessions=completed_sessions,
+
         average_score=average_score,
+
         total_events=total_events,
+
         event_logs=event_logs,
 
+        # Candidate risk information
+        candidate_risk_data=candidate_risk_data,
+
+        # Event chart information
+        event_labels=event_labels,
+        event_counts=event_counts,
         risk_labels=risk_labels,
         risk_counts=risk_counts,
 
-        event_labels=event_labels,
-        event_counts=event_counts,
-
+        # Filters
         candidate_filter=candidate_filter,
         event_filter=event_filter,
         date_filter=date_filter,
+
+        # Integrity analytics
         total_face_absence=total_face_absence,
+
         total_browser_loss=total_browser_loss,
+
         highest_score=highest_score,
-        lowest_score=lowest_score,
+
+        lowest_score=lowest_score
     )
 
 
@@ -1355,3 +1407,204 @@ def view_evidence(filename):
         evidence_folder,
         filename
     )    
+
+# ==========================================================
+# Download Current Event Logs
+# ==========================================================
+
+@exam.route("/download_event_logs")
+def download_event_logs():
+
+    if not session.get("is_admin"):
+        return redirect(url_for("exam.admin_login"))
+
+    candidate_filter = request.args.get("candidate_id", "")
+    event_filter = request.args.get("event_type", "")
+    date_filter = request.args.get("event_date", "")
+
+    connection = sqlite3.connect(DATABASE)
+    cursor = connection.cursor()
+
+    query = """
+        SELECT
+            rowid AS event_id,
+            candidate_id,
+            event_type,
+            timestamp,
+            remarks,
+            screenshot_path
+        FROM EventLog
+        WHERE 1=1
+    """
+
+    params = []
+
+    # Candidate filter
+    if candidate_filter:
+
+        query += " AND candidate_id=?"
+        params.append(candidate_filter)
+
+    # Event type filter
+    if event_filter:
+
+        query += " AND event_type=?"
+        params.append(event_filter)
+
+    # Date filter
+    if date_filter:
+
+        query += " AND DATE(timestamp)=?"
+        params.append(date_filter)
+
+    query += " ORDER BY timestamp DESC"
+
+    cursor.execute(query, params)
+
+    events = cursor.fetchall()
+
+    connection.close()
+
+    # ------------------------------------------------------
+    # Create CSV in memory
+    # ------------------------------------------------------
+
+    output = io.StringIO()
+
+    writer = csv.writer(output)
+
+    # CSV Header
+    writer.writerow([
+        "Event ID",
+        "Candidate ID",
+        "Event Type",
+        "Timestamp",
+        "Remarks",
+        "Screenshot Path"
+    ])
+
+    # CSV Data
+    for event in events:
+
+        writer.writerow(event)
+
+    # ------------------------------------------------------
+    # Send CSV file to browser
+    # ------------------------------------------------------
+
+    response = Response(
+        output.getvalue(),
+        mimetype="text/csv"
+    )
+
+    response.headers["Content-Disposition"] = (
+        "attachment; filename=event_logs.csv"
+    )
+
+    return response
+    
+# ==========================================================
+# Download Selected Event Logs
+# ==========================================================
+
+@exam.route("/download_selected_events", methods=["POST"])
+def download_selected_events():
+
+    if not session.get("is_admin"):
+        return redirect(url_for("exam.admin_login"))
+
+    selected_events = request.form.getlist("selected_events")
+
+    # ------------------------------------------------------
+    # Nothing selected
+    # ------------------------------------------------------
+
+    if not selected_events:
+
+        return redirect(
+            url_for("exam.admin_dashboard")
+        )
+
+    # Convert IDs to integers
+    try:
+
+        selected_ids = [
+            int(event_id)
+            for event_id in selected_events
+        ]
+
+    except ValueError:
+
+        return redirect(
+            url_for("exam.admin_dashboard")
+        )
+
+    connection = sqlite3.connect(DATABASE)
+
+    cursor = connection.cursor()
+
+    # ------------------------------------------------------
+    # Create placeholders
+    # ------------------------------------------------------
+
+    placeholders = ",".join(
+        ["?"] * len(selected_ids)
+    )
+
+    query = f"""
+        SELECT
+            rowid AS event_id,
+            candidate_id,
+            event_type,
+            timestamp,
+            remarks,
+            screenshot_path
+        FROM EventLog
+        WHERE rowid IN ({placeholders})
+        ORDER BY timestamp DESC
+    """
+
+    cursor.execute(
+        query,
+        selected_ids
+    )
+
+    events = cursor.fetchall()
+
+    connection.close()
+
+    # ------------------------------------------------------
+    # Create CSV
+    # ------------------------------------------------------
+
+    output = io.StringIO()
+
+    writer = csv.writer(output)
+
+    writer.writerow([
+        "Event ID",
+        "Candidate ID",
+        "Event Type",
+        "Timestamp",
+        "Remarks",
+        "Screenshot Path"
+    ])
+
+    for event in events:
+
+        writer.writerow(event)
+
+    # ------------------------------------------------------
+    # Send CSV
+    # ------------------------------------------------------
+
+    response = Response(
+        output.getvalue(),
+        mimetype="text/csv"
+    )
+
+    response.headers["Content-Disposition"] = (
+        "attachment; filename=selected_event_logs.csv"
+    )
+
+    return response
