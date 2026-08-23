@@ -1,5 +1,0 @@
-ID: 101 | Message: Hello | Type: NORMAL | Status: DELIVERED
-ID: 102 | Message: Welcome | Type: NORMAL | Status: CANCELLED
-ID: 101 | Message: Hello | Type: NORMAL | Status: DELIVERED
-ID: 101 | Message: Hello | Type: NORMAL | Status: DELIVERED
-ID: 103 | Message: hi | Type: NORMAL | Status: DELIVERED
