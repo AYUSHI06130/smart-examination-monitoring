@@ -4,3 +4,4 @@ numpy
 pandas
 Faker
 matplotlib
+SQLite
