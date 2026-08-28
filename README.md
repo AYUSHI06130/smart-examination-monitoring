@@ -1,6 +1,6 @@
 # Development of Smart Examination Monitoring Platform with Integrity Analysis & Reporting System
 
-## 📌 Project Overview
+##  Project Overview
 
 The **Smart Examination Monitoring Platform with Integrity Analysis & Reporting System** is an online examination monitoring solution designed to improve the reliability and integrity of online examinations.
 
@@ -10,7 +10,7 @@ Suspicious activities are recorded as events, and relevant evidence screenshots 
 
 ---
 
-## 🎯 Project Objectives
+##  Project Objectives
 
 The main objectives of this project are:
 
@@ -28,7 +28,7 @@ The main objectives of this project are:
 
 ---
 
-## 🚀 Key Features
+##  Key Features
 
 ### Candidate Monitoring
 
@@ -75,7 +75,7 @@ The main objectives of this project are:
 
 ---
 
-## 🛠️ Technology Stack
+##  Technology Stack
 
 ### Frontend
 
@@ -103,7 +103,7 @@ The main objectives of this project are:
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```text
 .
