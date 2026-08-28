@@ -12,5 +12,5 @@ SECRET_KEY = "online_monitoring_system_secret_key"
 # ----------------------------------------
 
 ADMIN_USERNAME = "admin"
-
+#admin username and password set by default
 ADMIN_PASSWORD = "admin123"
