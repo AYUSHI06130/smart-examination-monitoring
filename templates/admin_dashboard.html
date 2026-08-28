@@ -10,14 +10,70 @@
 
 </head>
 
+
+
 <body>
-<h1 style="color:red;">
-    TEST - NEW ADMIN DASHBOARD
-</h1>
 
-<div class="container">
+<!-- =====================================================
+     ADMIN NAVIGATION SIDEBAR
+====================================================== -->
 
-    <h1>Admin Dashboard</h1>
+<aside class="admin-sidebar">
+
+    <!-- Sidebar Brand -->
+
+    <div class="sidebar-brand">
+
+        <h2>SMART EXAM</h2>
+
+        <span>MONITORING</span>
+
+    </div>
+
+
+    <!-- Navigation -->
+
+    <nav class="sidebar-nav">
+
+        <a href="#integrityAnalytics">
+
+            <span class="nav-icon">▣</span>
+
+            <span>Integrity Analytics</span>
+
+        </a>
+
+
+        <a href="#charts">
+
+            <span class="nav-icon">◉</span>
+
+            <span>Charts</span>
+
+        </a>
+
+
+        <a href="#eventLogs">
+
+            <span class="nav-icon">☷</span>
+
+            <span>Event Logs</span>
+
+        </a>
+
+
+        <a href="#quickFilters">
+
+            <span class="nav-icon">⚙</span>
+
+            <span>Quick Filters</span>
+
+        </a>
+
+    </nav>
+
+
+    <!-- Bottom Navigation -->
 
     <div class="top-buttons">
 
@@ -28,6 +84,38 @@
         </a>
 
     </div>
+
+</aside>
+
+
+<!-- =====================================================
+     MAIN DASHBOARD CONTENT
+====================================================== -->
+
+<main class="dashboard-main" id="dashboardTop">
+
+
+
+
+
+<div class="container">
+
+    <h1>Admin Dashboard</h1>
+
+    
+
+    <!-- =====================================================
+     INTEGRITY ANALYTICS
+     ===================================================== -->
+
+    
+
+    <h2 class="section-heading"
+        id="integrityAnalytics"
+    >
+        Integrity Analytics
+        
+    </h2>
 
     <div class="grid">
 
@@ -66,7 +154,7 @@
      Integrity Analytics
 ========================================== -->
 
-<h2>Integrity Analytics</h2>
+
 
 <div class="analytics-grid">
 
@@ -101,10 +189,19 @@
      CHARTS
 ====================================================== -->
 
+<h2 class="section-heading"
+    id="charts"
+>
+    Charts
+</h2>
+
 <div class="charts-section">
 
-    <!-- Risk Distribution -->
-    <div class="chart-card">
+    <!-- =================================================
+         RISK DISTRIBUTION
+         ================================================= -->
+
+    <div class="chart-card risk-chart-card">
 
         <h2>Risk Distribution</h2>
 
@@ -113,18 +210,179 @@
     </div>
 
 
-    <!-- Event Type Distribution -->
-    <div class="chart-card">
+    <!-- =================================================
+         RISK CANDIDATE DETAILS
+         ================================================= -->
 
-        <h2>Event Type Distribution</h2>
+    <div
+        id="riskCandidatePanel"
+        class="risk-candidate-panel"
+    >
 
-        <canvas id="eventChart"></canvas>
+        <!-- Close Button -->
+
+        <button
+            type="button"
+            class="risk-panel-close"
+            onclick="closeRiskCandidateModal()"
+        >
+            ×
+        </button>
+
+
+        <!-- Default Message -->
+
+        <div
+            id="riskPanelPlaceholder"
+            class="risk-panel-placeholder"
+        >
+
+            <h2>Risk Details</h2>
+
+            <p>
+                Click a risk category in the chart
+                to view candidates.
+            </p>
+
+        </div>
+
+
+        <!-- Candidate Details -->
+
+        <div
+            id="riskPanelDetails"
+            style="display: none;"
+        >
+
+            <h2 id="riskCandidateTitle">
+                HIGH RISK CANDIDATES
+            </h2>
+
+
+            <div class="risk-table-wrapper">
+
+                <table class="risk-candidate-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>ID</th>
+
+                            <th>Name</th>
+
+                            <th>Email</th>
+
+                            <th>Score</th>
+
+                            <th>Session</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody
+                        id="riskCandidateTableBody"
+                    >
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
 
     </div>
 
 </div>
 
-   <h2>Event Logs</h2>
+
+<h2
+    class="section-heading"
+    id="eventLogs"
+>
+    Event Logs
+</h2>
+<!-- =====================================================
+     QUICK FILTER
+====================================================== -->
+
+<div
+    class="quick-filter-section"
+    id="quickFilters"
+>
+
+    <div class="quick-filter-header">
+
+        <div>
+            <h2 class="quick-filter-title">
+                Quick Filter
+            </h2>
+
+            <p class="quick-filter-subtitle">
+                Quick access to important filters.
+            </p>
+        </div>
+
+        <button
+            type="button"
+            id="clearQuickFilter"
+            class="quick-filter-clear"
+        >
+            Clear
+        </button>
+
+    </div>
+
+
+    <div class="quick-filter-buttons">
+
+        <!-- Critical Candidates -->
+
+        <button
+            type="button"
+            class="quick-filter-btn critical-filter"
+            data-filter="critical"
+        >
+            Critical Candidates
+        </button>
+
+
+        <!-- Excellent Candidates -->
+
+        <button
+            type="button"
+            class="quick-filter-btn excellent-filter"
+            data-filter="excellent"
+        >
+            Excellent Candidates
+        </button>
+
+
+        <!-- Candidates With Evidence -->
+
+        <button
+            type="button"
+            class="quick-filter-btn evidence-filter"
+            data-filter="evidence"
+        >
+            With Evidence
+        </button>
+
+    </div>
+
+
+    <div
+        id="quickFilterStatus"
+        class="quick-filter-status"
+    >
+        Showing all events
+    </div>
+
+</div>
+
+
 
 
 <!-- =====================================================
@@ -290,7 +548,7 @@
          DOWNLOAD CURRENT FILTERED / UNFILTERED EVENTS
          ================================================= -->
 
-    <a
+    <!--<a
         href="{{ url_for(
             'exam.download_event_logs',
             candidate_id=request.args.get('candidate_id', ''),
@@ -300,9 +558,63 @@
         class="download-btn"
     >
         Download Current Events
-    </a>
+    </a>-->
 
 </form>
+
+<!-- =====================================================
+     EVENT EXPORT CONTROLS
+     ===================================================== -->
+
+<div class="event-export-bar">
+
+    <div class="event-export-title">
+        <strong>EVENT EXPORT</strong>
+
+        <span id="selectedEventCount">
+            Selected: 0
+        </span>
+    </div>
+
+    <div class="event-export-buttons">
+
+        <!-- Current filtered/unfiltered events -->
+
+        <a
+            href="{{ url_for(
+                'exam.download_event_logs',
+                candidate_id=request.args.get('candidate_id', ''),
+                event_type=request.args.get('event_type', ''),
+                event_date=request.args.get('event_date', '')
+            ) }}"
+            class="download-btn"
+        >
+            Download Current Events
+        </a>
+
+
+        <!-- Selected events -->
+
+        <button
+            type="submit"
+            form="selectedEventsForm"
+            class="download-btn"
+        >
+            Download Selected Events
+        </button>
+
+        <button
+            type="button"
+            id="clearEventSelection"
+            class="clear-selection-btn"
+        >
+            Clear Selection
+        </button>
+
+
+    </div>
+
+</div>
 
 
 <!-- =====================================================
@@ -384,7 +696,12 @@
 
         {% for event in event_logs %}
 
-        <tr>
+        <tr
+            class="event-row"
+            data-candidate-id="{{ event[1] }}"
+            data-has-evidence="{{ 'true' if event[5] else 'false' }}"
+        >
+
 
 
             <!-- =================================================
@@ -504,23 +821,15 @@
 
                 {% if event[5] %}
 
-                    <a
-                        href="{{ url_for(
-                            'exam.view_evidence',
-                            filename=event[5].replace(
-                                'evidence\\',
-                                ''
-                            ).replace(
-                                '\\',
-                                '/'
-                            )
-                        ) }}"
+                    <a href="{{ url_for(
+                            'exam.evidence_details',
+                            event_id=event[0]
+                            ) }}"
                         target="_blank"
                         class="evidence-btn"
                     >
-                        View
+                        View Screenshot
                     </a>
-
 
                 {% else %}
 
@@ -540,21 +849,7 @@
     </table>
 
 
-    <!-- =================================================
-         DOWNLOAD SELECTED EVENTS BUTTON
-         ================================================= -->
-
-    <div class="selected-download-container">
-
-        <button
-            type="submit"
-            class="download-btn"
-        >
-            Download Selected Events
-        </button>
-
-    </div>
-
+    
 
 </form>
 
@@ -593,16 +888,121 @@
 
                     }
                 );
+                updateSelectedEventCount();
 
             }
         );
 
     }
 
+    // =====================================================
+    // SELECTED EVENT COUNT
+    // =====================================================
+
+    const selectedEventCount =
+        document.getElementById("selectedEventCount");
+
+
+    function updateSelectedEventCount() {
+
+        const selected =
+            document.querySelectorAll(
+                ".event-checkbox:checked"
+            );
+
+        if (selectedEventCount) {
+
+            selectedEventCount.textContent =
+                "Selected: " + selected.length;
+
+        }
+
+    }
+
+
+     // Update count when individual checkbox changes
+
+    const eventCheckboxes =
+        document.querySelectorAll(
+            ".event-checkbox"
+        );
+
+
+    eventCheckboxes.forEach(
+        function (checkbox) {
+
+            checkbox.addEventListener(
+                "change",
+                updateSelectedEventCount
+            );
+
+        }
+    );
+    
+
+
+    // Initial count
+
+    updateSelectedEventCount();
+
 
     // =====================================================
-    // PREVENT EMPTY SELECTION
+    // CLEAR ALL EVENT SELECTIONS
     // =====================================================
+
+    const clearEventSelection =
+        document.getElementById(
+            "clearEventSelection"
+        );
+    
+
+
+    if (clearEventSelection) {
+
+        clearEventSelection.addEventListener(
+            "click",
+            function () {
+
+                // Get all individual event checkboxes
+
+                const eventCheckboxes =
+                    document.querySelectorAll(
+                        ".event-checkbox"
+                    );
+
+
+                // Uncheck every event
+
+                eventCheckboxes.forEach(
+                    function (checkbox) {
+
+                        checkbox.checked = false;
+
+                    }
+                );
+
+
+                 // Uncheck Select All
+
+                if (selectAllCheckbox) {
+
+                    selectAllCheckbox.checked = false;
+
+                }
+
+
+                // Update selected count
+
+                updateSelectedEventCount();
+
+            }
+        );
+
+    }
+
+    // =====================================================
+        // PREVENT EMPTY SELECTION
+        // =====================================================
 
     const selectedEventsForm =
         document.getElementById(
@@ -640,6 +1040,345 @@
 
 </script> 
 
+<!-- =====================================================
+     QUICK FILTER JAVASCRIPT
+====================================================== -->
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+
+        // =================================================
+        // ELEMENTS
+        // =================================================
+
+        const quickFilterButtons =
+            document.querySelectorAll(
+                ".quick-filter-btn"
+            );
+
+
+        const clearQuickFilter =
+            document.getElementById(
+                "clearQuickFilter"
+            );
+
+
+        const quickFilterStatus =
+            document.getElementById(
+                "quickFilterStatus"
+            );
+
+
+        const eventRows =
+            document.querySelectorAll(
+                ".event-row"
+            );
+
+
+        // =================================================
+        // CANDIDATE RISK DATA
+        // =================================================
+
+        const candidateRiskElement =
+            document.getElementById(
+                "candidateRiskData"
+            );
+
+
+        let candidateRiskData = [];
+
+
+        if (candidateRiskElement) {
+
+            try {
+
+                candidateRiskData =
+                    JSON.parse(
+                        candidateRiskElement.textContent
+                    );
+
+            } catch (error) {
+
+                console.error(
+                    "Unable to read candidate risk data:",
+                    error
+                );
+
+            }
+
+        }
+
+
+        // =================================================
+        // CREATE CANDIDATE RISK MAP
+        // =================================================
+
+        const candidateRiskMap =
+            new Map();
+
+
+        candidateRiskData.forEach(
+            function (candidate) {
+
+                /*
+                 candidate[0] = candidate ID
+                 candidate[1] = name
+                 candidate[2] = email
+                 candidate[3] = final score
+                 candidate[4] = risk level
+                 candidate[5] = session ID
+                */
+
+                candidateRiskMap.set(
+                    String(candidate[0]),
+                    candidate[4]
+                );
+
+            }
+        );
+
+
+        // =================================================
+        // APPLY QUICK FILTER
+        // =================================================
+
+        function applyQuickFilter(
+            selectedFilter
+        ) {
+
+
+            let visibleCount = 0;
+
+
+            eventRows.forEach(
+                function (row) {
+
+
+                    const candidateId =
+                        row.dataset.candidateId;
+
+
+                    const hasEvidence =
+                        row.dataset.hasEvidence ===
+                        "true";
+
+
+                    const risk =
+                        candidateRiskMap.get(
+                            String(candidateId)
+                        );
+
+
+                    let shouldShow = true;
+
+
+                    // -------------------------------------
+                    // CRITICAL CANDIDATES
+                    // -------------------------------------
+
+                    if (
+                        selectedFilter ===
+                        "critical"
+                    ) {
+
+                        shouldShow =
+                            risk === "High Risk" ||
+                            risk === "Very High Risk";
+
+                    }
+
+
+                    // -------------------------------------
+                    // EXCELLENT CANDIDATES
+                    // -------------------------------------
+
+                    else if (
+                        selectedFilter ===
+                        "excellent"
+                    ) {
+
+                        shouldShow =
+                            risk === "Excellent";
+
+                    }
+
+
+                    // -------------------------------------
+                    // WITH EVIDENCE
+                    // -------------------------------------
+
+                    else if (
+                        selectedFilter ===
+                        "evidence"
+                    ) {
+
+                        shouldShow =
+                            hasEvidence;
+
+                    }
+
+
+                    // -------------------------------------
+                    // SHOW / HIDE ROW
+                    // -------------------------------------
+
+                    if (shouldShow) {
+
+                        row.style.display = "";
+                        visibleCount++;
+
+                    } else {
+
+                        row.style.display = "none";
+
+                    }
+
+                }
+            );
+
+
+            // =================================================
+            // UPDATE STATUS
+            // =================================================
+
+            if (
+                !selectedFilter
+            ) {
+
+                quickFilterStatus.textContent =
+                    "Showing all events";
+
+            }
+
+            else if (
+                selectedFilter ===
+                "critical"
+            ) {
+
+                quickFilterStatus.textContent =
+                    "Showing events for critical candidates • " +
+                    visibleCount +
+                    " events";
+
+            }
+
+            else if (
+                selectedFilter ===
+                "excellent"
+            ) {
+
+                quickFilterStatus.textContent =
+                    "Showing events for excellent candidates • " +
+                    visibleCount +
+                    " events";
+
+            }
+
+            else if (
+                selectedFilter ===
+                "evidence"
+            ) {
+
+                quickFilterStatus.textContent =
+                    "Showing events with evidence • " +
+                    visibleCount +
+                    " events";
+
+            }
+
+        }
+
+
+        // =================================================
+        // BUTTON CLICK
+        // =================================================
+
+        quickFilterButtons.forEach(
+            function (button) {
+
+                button.addEventListener(
+                    "click",
+                    function () {
+
+
+                        // Remove active state
+                        // from every button
+
+                        quickFilterButtons.forEach(
+                            function (btn) {
+
+                                btn.classList.remove(
+                                    "active"
+                                );
+
+                            }
+                        );
+
+
+                        // Add active state
+
+                        button.classList.add(
+                            "active"
+                        );
+
+
+                        // Apply filter
+
+                        applyQuickFilter(
+                            button.dataset.filter
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+
+        // =================================================
+        // CLEAR FILTER
+        // =================================================
+
+        if (clearQuickFilter) {
+
+            clearQuickFilter.addEventListener(
+                "click",
+                function () {
+
+
+                    quickFilterButtons.forEach(
+                        function (button) {
+
+                            button.classList.remove(
+                                "active"
+                            );
+
+                        }
+                    );
+
+
+                    applyQuickFilter(
+                        ""
+                    );
+
+                }
+            );
+
+        }
+
+    }
+
+);
+
+</script>
+
+
+
+
 
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -659,7 +1398,7 @@ const candidateRiskData = JSON.parse(
 
 
 // =====================================================
-// Risk Categories
+// RISK CATEGORIES
 // =====================================================
 
 const riskLabels = [
@@ -672,12 +1411,12 @@ const riskLabels = [
 
 
 // =====================================================
-// Count candidates in each risk category
+// COUNT CANDIDATES IN EACH RISK CATEGORY
 // =====================================================
 
-const riskCounts = riskLabels.map(function(risk) {
+const riskCounts = riskLabels.map(function (risk) {
 
-    return candidateRiskData.filter(function(candidate) {
+    return candidateRiskData.filter(function (candidate) {
 
         return candidate[4] === risk;
 
@@ -687,10 +1426,10 @@ const riskCounts = riskLabels.map(function(risk) {
 
 
 // =====================================================
-// Risk Distribution Chart
+// RISK DISTRIBUTION CHART
 // =====================================================
 
-new Chart(
+const riskChart = new Chart(
     document.getElementById("riskChart"),
     {
 
@@ -720,55 +1459,49 @@ new Chart(
 
                 },
 
+
+                // =================================================
+                // HOVER TOOLTIP
+                // =================================================
+
                 tooltip: {
 
                     callbacks: {
 
-                        title: function(context) {
+                        title: function (context) {
 
                             return context[0].label;
 
                         },
 
 
-                        label: function(context) {
+                        label: function (context) {
 
                             const selectedRisk =
                                 context.label;
 
 
-                            const candidates =
-                                candidateRiskData.filter(
-                                    function(candidate) {
-
-                                        return candidate[4] === selectedRisk;
-
-                                    }
-                                );
+                            const count =
+                                context.raw;
 
 
-                            const totalCandidates =
+                            const total =
                                 candidateRiskData.length;
 
 
                             const percentage =
-                                totalCandidates > 0
+                                total > 0
                                     ? (
-                                        candidates.length /
-                                        totalCandidates *
+                                        count /
+                                        total *
                                         100
                                     ).toFixed(1)
-                                    : 0;
+                                    : "0.0";
 
 
-                            // ---------------------------------
-                            // Tooltip content
-                            // ---------------------------------
+                            return [
 
-                            const tooltipLines = [
-
-                                "Candidates: " +
-                                candidates.length,
+                                "Candidates: " + count,
 
                                 "Percentage: " +
                                 percentage +
@@ -776,116 +1509,227 @@ new Chart(
 
                             ];
 
-
-                            candidates.forEach(
-                                function(candidate, index) {
-
-                                    tooltipLines.push("");
-
-                                    tooltipLines.push(
-                                        "Candidate " +
-                                        (index + 1)
-                                    );
-
-                                    tooltipLines.push(
-                                        "ID: " +
-                                        candidate[0]
-                                    );
-
-                                    tooltipLines.push(
-                                        "Name: " +
-                                        candidate[1]
-                                    );
-
-                                    tooltipLines.push(
-                                        "Email: " +
-                                        candidate[2]
-                                    );
-
-                                    tooltipLines.push(
-                                        "Score: " +
-                                        candidate[3]
-                                    );
-
-                                    tooltipLines.push(
-                                        "Risk: " +
-                                        candidate[4]
-                                    );
-
-                                    tooltipLines.push(
-                                        "Session: " +
-                                        candidate[5]
-                                    );
-
-                                }
-                            );
-
-
-                            return tooltipLines;
-
                         }
 
                     }
 
                 }
 
-            }
-
-        }
-
-    }
-
-);
-
-</script>
-<script>
-
-const eventLabels = JSON.parse(
-    '{{ event_labels | tojson }}'
-);
-
-const eventCounts = JSON.parse(
-    '{{ event_counts | tojson }}'
-);
+            },
 
 
-new Chart(
-    document.getElementById("eventChart"),
-    {
+            // =================================================
+            // CLICK ON PIE SLICE
+            // =================================================
 
-        type: "doughnut",
+            onClick: function (event, elements) {
 
-        data: {
+                if (!elements.length) {
 
-            labels: eventLabels,
-
-            datasets: [{
-
-                data: eventCounts
-
-            }]
-
-        },
-
-        options: {
-
-            responsive: true,
-
-            plugins: {
-
-                legend: {
-
-                    position: "bottom"
+                    return;
 
                 }
 
+
+                const index =
+                    elements[0].index;
+
+
+                const selectedRisk =
+                    riskLabels[index];
+
+
+                const candidates =
+                    candidateRiskData.filter(
+                        function (candidate) {
+
+                            return candidate[4] === selectedRisk;
+
+                        }
+                    );
+
+
+                showRiskCandidates(
+                    selectedRisk,
+                    candidates
+                );
+
             }
 
         }
 
     }
-
 );
+
+
+// =====================================================
+// SHOW CANDIDATES FOR SELECTED RISK
+// =====================================================
+
+function showRiskCandidates(
+    riskLevel,
+    candidates
+) {
+
+    const panel =
+        document.getElementById(
+            "riskCandidatePanel"
+        );
+
+
+    const panelTitle =
+        document.getElementById(
+            "riskCandidateTitle"
+        );
+
+
+    const tableBody =
+        document.getElementById(
+            "riskCandidateTableBody"
+        );
+
+
+    const placeholder =
+        document.getElementById(
+            "riskPanelPlaceholder"
+        );
+
+
+    const details =
+        document.getElementById(
+            "riskPanelDetails"
+        );
+
+
+    // =================================================
+    // UPDATE TITLE
+    // =================================================
+
+    panelTitle.textContent =
+        riskLevel.toUpperCase() +
+        " CANDIDATES";
+
+
+    // =================================================
+    // CLEAR OLD ROWS
+    // =================================================
+
+    tableBody.innerHTML = "";
+
+
+    // =================================================
+    // NO CANDIDATES
+    // =================================================
+
+    if (candidates.length === 0) {
+
+        tableBody.innerHTML = `
+
+            <tr>
+
+                <td colspan="5">
+
+                    No candidates in this category.
+
+                </td>
+
+            </tr>
+
+        `;
+
+    }
+
+
+    // =================================================
+    // ADD CANDIDATE ROWS
+    // =================================================
+
+    candidates.forEach(
+        function (candidate) {
+
+            const row =
+                document.createElement("tr");
+
+
+            row.innerHTML = `
+
+                <td>
+                    ${candidate[0]}
+                </td>
+
+                <td>
+                    ${candidate[1]}
+                </td>
+
+                <td>
+                    ${candidate[2]}
+                </td>
+
+                <td>
+                    ${candidate[3]}
+                </td>
+
+                <td>
+                    ${candidate[5]}
+                </td>
+
+            `;
+
+
+            tableBody.appendChild(row);
+
+        }
+    );
+
+
+    // =================================================
+    // SHOW DETAILS
+    // =================================================
+
+    placeholder.style.display = "none";
+
+    details.style.display = "block";
+
+    panel.classList.add(
+        "risk-panel-active"
+    );
+
+}
+
+
+// =====================================================
+// CLOSE RISK CANDIDATE MODAL
+// =====================================================
+
+function closeRiskCandidateModal() {
+
+    const panel =
+        document.getElementById(
+            "riskCandidatePanel"
+        );
+
+
+    const placeholder =
+        document.getElementById(
+            "riskPanelPlaceholder"
+        );
+
+
+    const details =
+        document.getElementById(
+            "riskPanelDetails"
+        );
+
+
+    details.style.display = "none";
+
+    placeholder.style.display = "block";
+
+    panel.classList.remove(
+        "risk-panel-active"
+    );
+
+}
 
 </script>
 

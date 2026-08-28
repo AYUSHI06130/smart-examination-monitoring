@@ -1254,6 +1254,7 @@ def admin_dashboard():
     query += " ORDER BY timestamp DESC"
 
     cursor.execute(query, params)
+    
 
     event_logs = cursor.fetchall()
 
@@ -1309,27 +1310,7 @@ def admin_dashboard():
 
     lowest_score = cursor.fetchone()[0] or 0
 
-    # ==========================================================
-    # EVENT TYPE DISTRIBUTION
-    # ==========================================================
 
-    cursor.execute("""
-        SELECT
-            event_type,
-            COUNT(*)
-        FROM EventLog
-        GROUP BY event_type
-    """)
-
-    event_data = cursor.fetchall()
-
-    event_labels = []
-    event_counts = []
-
-    for row in event_data:
-
-        event_labels.append(row[0])
-        event_counts.append(row[1])
 
     print("\n================ RISK CANDIDATE DATA ================")
     print(candidate_risk_data)
@@ -1359,13 +1340,13 @@ def admin_dashboard():
         total_events=total_events,
 
         event_logs=event_logs,
+        
 
         # Candidate risk information
         candidate_risk_data=candidate_risk_data,
 
-        # Event chart information
-        event_labels=event_labels,
-        event_counts=event_counts,
+        # risk chart information
+    
         risk_labels=risk_labels,
         risk_counts=risk_counts,
 
@@ -1406,6 +1387,61 @@ def view_evidence(filename):
     return send_from_directory(
         evidence_folder,
         filename
+    )    
+
+@exam.route("/evidence-details/<int:event_id>")
+def evidence_details(event_id):
+
+    # -----------------------------------------
+    # Admin authentication
+    # -----------------------------------------
+
+    if not session.get("is_admin"):
+        return redirect(
+            url_for("exam.admin_login")
+        )
+
+    # -----------------------------------------
+    # Connect to database
+    # -----------------------------------------
+
+    connection = sqlite3.connect(DATABASE)
+    cursor = connection.cursor()
+
+    # -----------------------------------------
+    # Get event information
+    # -----------------------------------------
+
+    cursor.execute("""
+        SELECT
+            rowid,
+            candidate_id,
+            event_type,
+            timestamp,
+            remarks,
+            screenshot_path
+        FROM EventLog
+        WHERE rowid=?
+    """, (event_id,))
+
+    event = cursor.fetchone()
+
+    connection.close()
+
+    # -----------------------------------------
+    # Event not found
+    # -----------------------------------------
+
+    if not event:
+        return "Event not found", 404
+
+    # -----------------------------------------
+    # Send event information to template
+    # -----------------------------------------
+
+    return render_template(
+        "evidence_viewer.html",
+        event=event
     )    
 
 # ==========================================================

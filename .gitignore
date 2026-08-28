@@ -16,7 +16,10 @@ generated_data/*.csv
 # Candidate photos
 photos/*
 !photos/.gitkeep
+
+
 evidence/
+static/uploads/
 
 # Monitoring screenshots
 screenshots/*
