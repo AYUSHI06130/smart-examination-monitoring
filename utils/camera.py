@@ -1,8 +1,9 @@
 import cv2
 import os
+import time
 
 
-def capture_photo(candidate_id):
+def capture_photo(candidate_id, timeout_seconds=15):
     """
     Opens webcam and captures one photo.
 
@@ -41,46 +42,43 @@ def capture_photo(candidate_id):
         f"{candidate_id}.jpg"
     )
 
-    while True:
+    start_time = time.monotonic()
 
-        success, frame = camera.read()
+    try:
+        while time.monotonic() - start_time < timeout_seconds:
 
-        if not success:
+            success, frame = camera.read()
 
-            print("Failed to read frame.")
+            if not success:
 
-            break
+                print("Failed to read frame.")
 
-        cv2.imshow("Capture Candidate Photo", frame)
+                break
 
-        key = cv2.waitKey(1) & 0xFF
+            cv2.imshow("Capture Candidate Photo", frame)
 
-        # -------------------------
-        # SPACE Key
-        # -------------------------
+            key = cv2.waitKey(1) & 0xFF
 
-        if key == 32:
+            if key == 32:
 
-            cv2.imwrite(photo_path, frame)
+                cv2.imwrite(photo_path, frame)
 
-            print("Photo Saved Successfully.")
+                print("Photo Saved Successfully.")
 
-            break
+                break
 
-        # -------------------------
-        # ESC Key
-        # -------------------------
+            if key == 27:
 
-        elif key == 27:
+                print("Photo Capture Cancelled.")
 
-            print("Photo Capture Cancelled.")
+                photo_path = None
 
+                break
+        else:
+            print("Photo capture timed out.")
             photo_path = None
-
-            break
-
-    camera.release()
-
-    cv2.destroyAllWindows()
+    finally:
+        camera.release()
+        cv2.destroyAllWindows()
 
     return photo_path

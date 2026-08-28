@@ -1,13 +1,15 @@
 import sqlite3
 import os
 
+BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+
 # ==========================================
 # Create Database Folder
 # ==========================================
 
-os.makedirs("database", exist_ok=True)
+os.makedirs(os.path.join(BASE_DIR, "database"), exist_ok=True)
 
-DATABASE_PATH = "database/monitoring.db"
+DATABASE_PATH = os.path.join(BASE_DIR, "database", "monitoring.db")
 
 connection = sqlite3.connect(DATABASE_PATH)
 
