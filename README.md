@@ -110,13 +110,6 @@ The main objectives of this project are:
 ├── database/
 │ └── Database-related files
 │
-├── evidence/
-│ └── Candidate_123456/
-│ └── Evidence screenshots
-│
-├── models/
-│ └── Application data models
-│
 ├── routes/
 │ └── Flask application routes
 │
