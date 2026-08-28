@@ -22,7 +22,7 @@ app.register_blueprint(exam)
 def home():
     return render_template("index.html")
 
-
+#code to run 
 
 if __name__ == "__main__":
     print("\n========== ROUTES ==========")
