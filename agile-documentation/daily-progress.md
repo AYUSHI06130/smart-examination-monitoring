@@ -30,7 +30,7 @@ Development of Smart Examination Monitoring Platform with Integrity Analysis & R
 | Day 16 | Integrity analysis | Completed |
 | Day 17 | Examination report | Completed |
 | Day 18 | Testing and bug fixing | Completed |
-| Day 19 | Documentation and final review | Completed |
+| Day 19 | Documentation and final review | Completed 
 
 ---
 
